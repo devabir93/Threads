@@ -1,6 +1,7 @@
 package com.ucas.android.threads;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -23,6 +24,7 @@ public class WeatherActivity extends Activity {
     TextView tvWeatherJson;
     Button btnFetchWeather;
     String apiKey = "deb36c3236d1bf5dd6b0d5e631a02f15";
+    private ProgressDialog mProgressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,7 +41,24 @@ public class WeatherActivity extends Activity {
     }
 
 
-    private class FetchWeatherData extends AsyncTask<Void, Void, String> {
+    private class FetchWeatherData extends AsyncTask<Void, Integer, String> {
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            // Create progress dialog
+                mProgressDialog = new ProgressDialog(WeatherActivity.this);
+                // Set your progress dialog Title
+                mProgressDialog.setTitle("Downloading");
+                // Set your progress dialog Message
+                mProgressDialog.setMessage("Downloading, Please Wait!");
+                mProgressDialog.setIndeterminate(false);
+                mProgressDialog.setMax(100);
+                mProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+                // Show progress dialog
+                mProgressDialog.show();
+
+        }
 
         @Override
         protected String doInBackground(Void... params) {
@@ -50,6 +69,7 @@ public class WeatherActivity extends Activity {
 
             // Will contain the raw JSON response as a string.
             String forecastJsonStr = null;
+            String buffer = "";
 
             try {
                 // Construct the URL for the OpenWeatherMap query
@@ -64,33 +84,25 @@ public class WeatherActivity extends Activity {
 
                 // Read the input stream into a String
                 InputStream inputStream = urlConnection.getInputStream();
-                StringBuffer buffer = new StringBuffer();
                 if (inputStream == null) {
                     // Nothing to do.
                     return null;
                 }
                 reader = new BufferedReader(new InputStreamReader(inputStream));
-
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    // Since it's JSON, adding a newline isn't necessary (it won't affect parsing)
-                    // But it does make debugging a *lot* easier if you print out the completed
-                    // buffer for debugging.
-                    buffer.append(line + "\n");
-                }
-
+                for (String linee; (linee = reader.readLine()) != null; buffer += linee) ;
                 if (buffer.length() == 0) {
                     // Stream was empty.  No point in parsing.
                     return null;
                 }
-                forecastJsonStr = buffer.toString();
-                JSONObject jsonObject = new JSONObject(forecastJsonStr);
+                Log.d("buffer", buffer + "");
+                JSONObject jsonObject = new JSONObject(buffer);
                 JSONObject main = jsonObject.getJSONObject("main");
                 double temp = main.getDouble("temp");
+                Log.d("temp", temp + "");
 
                 return temp + "";
             } catch (IOException | JSONException e) {
-                Log.e("PlaceholderFragment", "Error ", e);
+                e.printStackTrace();
                 // If the code didn't successfully get the weather data, there's no point in attemping
                 // to parse it.
                 return null;
@@ -109,10 +121,20 @@ public class WeatherActivity extends Activity {
         }
 
         @Override
+        protected void onProgressUpdate(Integer... values) {
+            super.onProgressUpdate(values);
+            Log.d("onProgressUpdate", values[0] + "");
+            mProgressDialog.setProgress((values[0]));
+        }
+
+        @Override
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
+            if (s == null)
+                return;
+            Log.d("json", s + "");
+            mProgressDialog.dismiss();
             tvWeatherJson.setText(s);
-            Log.d("json", s);
         }
     }
 }

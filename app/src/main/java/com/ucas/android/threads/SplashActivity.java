@@ -1,6 +1,7 @@
 package com.ucas.android.threads;
 
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.widget.TextView;
@@ -35,7 +36,7 @@ public class SplashActivity extends AppCompatActivity {
                     timerTv.setText(timeLeft + "");
                 } else {
                     stop = true;
-                    startActivity(new Intent(SplashActivity.this, MainActivity.class));
+                    startActivity(new Intent(SplashActivity.this, DownloadImageUsingAsyncTaskActivity.class));
                     handler.removeCallbacks(runnable);
                 }
                 if (!stop)
@@ -49,7 +50,7 @@ public class SplashActivity extends AppCompatActivity {
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
-                startActivity(new Intent(SplashActivity.this, MainActivity.class));
+                startActivity(new Intent(SplashActivity.this, DownloadImageUsingAsyncTaskActivity.class));
             }
         }, SPLASH_DELAY);
     }

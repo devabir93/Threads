@@ -8,7 +8,7 @@ android {
 
     defaultConfig {
         applicationId "com.ucas.android.threads"
-        minSdkVersion 21
+        minSdkVersion 24
         targetSdkVersion 31
         versionCode 1
         versionName "1.0"
